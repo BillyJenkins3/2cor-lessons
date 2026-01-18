@@ -6,6 +6,16 @@
   <meta name="color-scheme" content="light dark" />
   <title>2 Corinthians 13 — Study</title>
 
+  <!-- PWA / App-like setup -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#1c4785" />
+
+  <!-- iOS Add to Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Bible Study" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
   <style>
     :root{
       --primary:#1c4785;
@@ -59,6 +69,11 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+      /* Safe-area support (iPhone notch + home indicator) */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+
       background:
         radial-gradient(900px 420px at 12% -10%, rgba(28,71,133,.40), transparent 62%),
         radial-gradient(900px 420px at 88% 0%, rgba(150,150,150,.22), transparent 62%),
@@ -206,6 +221,38 @@
 
     .small{font-size:var(--step--1);color:var(--muted2);margin-top:8px}
 
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.72);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 12px;
+      border-radius:999px;
+      font-size:14px;
+      z-index:1000;
+      display:none;
+      max-width:92vw;
+      text-align:center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    html[data-theme="light"] .toast{background: rgba(17,24,39,.85);}
+
+    /* Warning banner for previewers */
+    .banner{
+      display:none;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      border-radius: var(--radius2);
+      padding: 12px;
+      margin: 10px 0 14px;
+      color: var(--muted);
+    }
+
     @media print{
       .appbar,.no-print{display:none!important}
       body{background:#fff;color:#000}
@@ -215,6 +262,8 @@
 </head>
 
 <body>
+  <div class="toast" id="toast"></div>
+
   <div class="appbar">
     <div class="inner">
       <div class="brand">
@@ -225,15 +274,20 @@
         </div>
       </div>
       <div class="actions">
-        <button class="btn ghost" id="themeBtn">🌓 Theme</button>
-        <button class="btn" id="downloadBtn">⬇ Download Notes</button>
-        <button class="btn" onclick="window.print()">🖨 Print / PDF</button>
-        <button class="btn primary" id="saveBtn">✓ Save</button>
+        <button class="btn ghost" id="themeBtn" type="button">🌓 <span id="themeLabel">Theme: Auto</span></button>
+        <button class="btn" id="downloadBtnTop" type="button">⬇ Download Notes</button>
+        <button class="btn" id="printBtnTop" type="button">🖨 Print / PDF</button>
+        <button class="btn primary" id="saveBtn" type="button">✓ Save</button>
       </div>
     </div>
   </div>
 
   <div class="wrap">
+    <div class="banner" id="banner">
+      If buttons don’t work, you may be viewing this in a previewer (Drive/Dropbox/Files preview) that blocks downloads, clipboard, printing, or storage.
+      Open this page in Safari/Chrome/Edge directly.
+    </div>
+
     <div class="grid">
       <!-- LEFT -->
       <main class="card">
@@ -250,7 +304,15 @@
 
         <div class="kicker2">Chapter Summary</div>
         <div class="prose">
-          <p>Paul concludes this letter by informing the Corinthians that he will make his third trip to Corinth to check on the church's well-being...</p>
+          <p>
+            Paul concludes this letter by informing the Corinthians that he will make his third trip to Corinth to check on the church's well-being. Paul makes it clear that he is coming with the rod of rebuke, primarily intended for those who remain in the same sins he found them in on his second visit.
+          </p>
+          <p>
+            The prayer Paul prays is that the church does not fight against his correction and that he does not need to use his God-given authority. This warning should not be mistaken as a power trip by Paul because he would gladly appear weak if it showcased that the church was, in fact, strong. Paul prefers to use his God-given authority to build up the Church, not tear them down.
+          </p>
+          <p>
+            Paul concludes the letter with a command to be joyful, to grow in maturity, and to live in harmony with one another. "The grace of the Lord Jesus Christ, and the love of God, and the communion of the Holy Ghost, be with you all. Amen."
+          </p>
         </div>
 
         <div class="divider"></div>
@@ -266,7 +328,7 @@
 
         <div class="kicker2">Word of the Day</div>
         <div class="prose" style="color:var(--muted)">
-          <strong>Reprobate — Adokimos</strong><br>
+          <strong>Reprobate — Adokimos (ad-ok'-ee-mos)</strong><br>
           which does not prove itself to be such as it ought; of sterile soil (G96)
         </div>
       </main>
@@ -278,38 +340,228 @@
         <textarea id="notes" placeholder="Write your notes here..."></textarea>
 
         <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-          <button class="btn" onclick="document.getElementById('notes').value=''">🗑 Clear</button>
-          <button class="btn" onclick="navigator.clipboard?.writeText(notes.value)">📋 Copy</button>
+          <button class="btn" type="button" id="clearBtn">🗑 Clear</button>
+          <button class="btn" type="button" id="copyBtn">📋 Copy</button>
+          <button class="btn" type="button" id="downloadBtn">⬇ Download</button>
+          <button class="btn" type="button" id="printBtn">🖨 Print / PDF</button>
         </div>
+
+        <div class="small" id="status">Ready.</div>
       </aside>
     </div>
   </div>
 
   <script>
-    // Theme toggle
-    const root = document.documentElement;
-    document.getElementById("themeBtn").onclick = () => {
-      const t = root.getAttribute("data-theme");
-      root.setAttribute("data-theme", t === "dark" ? "light" : "dark");
-    };
+    (function(){
+      const toastEl = document.getElementById("toast");
+      const bannerEl = document.getElementById("banner");
+      const toast = (msg) => {
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.style.display = "block";
+        clearTimeout(toastEl._t);
+        toastEl._t = setTimeout(() => (toastEl.style.display = "none"), 2200);
+      };
 
-    // Save / Download Notes
-    const notes = document.getElementById("notes");
-    const KEY = "cor13_notes";
-    notes.value = localStorage.getItem(KEY) || "";
+      // Detect storage availability (previewers often block it)
+      let storageOK = true;
+      try {
+        const k = "__test__";
+        localStorage.setItem(k, "1");
+        localStorage.removeItem(k);
+      } catch (e) {
+        storageOK = false;
+      }
 
-    document.getElementById("saveBtn").onclick = () => {
-      localStorage.setItem(KEY, notes.value);
-      alert("Notes saved");
-    };
+      if (!storageOK) {
+        if (bannerEl) bannerEl.style.display = "block";
+      }
 
-    document.getElementById("downloadBtn").onclick = () => {
-      const blob = new Blob([notes.value], {type:"text/plain"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "2-corinthians-13-notes.txt";
-      a.click();
-    };
+      // Theme: Auto -> Dark -> Light
+      const root = document.documentElement;
+      const THEME_KEY = "study_theme_pref";
+      const themeBtn = document.getElementById("themeBtn");
+      const themeLabel = document.getElementById("themeLabel");
+      const cycle = ["auto", "dark", "light"];
+
+      function applyTheme(t){
+        root.setAttribute("data-theme", t);
+        if (themeLabel) themeLabel.textContent = "Theme: " + (t[0].toUpperCase() + t.slice(1));
+        if (storageOK) {
+          try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+        }
+      }
+
+      let initialTheme = "auto";
+      if (storageOK) {
+        try { initialTheme = localStorage.getItem(THEME_KEY) || "auto"; } catch (e) {}
+      }
+      if (!cycle.includes(initialTheme)) initialTheme = "auto";
+      applyTheme(initialTheme);
+
+      if (themeBtn) {
+        themeBtn.addEventListener("click", () => {
+          const cur = root.getAttribute("data-theme") || "auto";
+          const next = cycle[(cycle.indexOf(cur) + 1) % cycle.length];
+          applyTheme(next);
+          toast("Theme: " + next);
+        });
+      }
+
+      // Notes (autosave + buttons)
+      const notes = document.getElementById("notes");
+      const status = document.getElementById("status");
+      const setStatus = (s) => { if (status) status.textContent = s; };
+      const NOTES_KEY = "cor13_notes";
+
+      if (notes && storageOK) {
+        try {
+          notes.value = localStorage.getItem(NOTES_KEY) || "";
+        } catch (e) {}
+      }
+
+      // Autosave after pause
+      let tmr = null;
+      if (notes) {
+        notes.addEventListener("input", () => {
+          setStatus("Typing…");
+          clearTimeout(tmr);
+          tmr = setTimeout(() => {
+            if (!storageOK) { setStatus("Autosave blocked here."); return; }
+            try {
+              localStorage.setItem(NOTES_KEY, notes.value || "");
+              setStatus("Auto-saved ✔");
+            } catch (e) {
+              setStatus("Autosave blocked here.");
+            }
+          }, 700);
+        });
+      }
+
+      // Save button
+      const saveBtn = document.getElementById("saveBtn");
+      if (saveBtn && notes) {
+        saveBtn.addEventListener("click", () => {
+          if (!storageOK) { toast("Save blocked here. Use Download."); return; }
+          try {
+            localStorage.setItem(NOTES_KEY, notes.value || "");
+            setStatus("Saved ✔");
+            toast("Saved");
+          } catch (e) {
+            toast("Save blocked here. Use Download.");
+          }
+        });
+      }
+
+      // Clear
+      const clearBtn = document.getElementById("clearBtn");
+      if (clearBtn && notes) {
+        clearBtn.addEventListener("click", () => {
+          notes.value = "";
+          if (storageOK) {
+            try { localStorage.removeItem(NOTES_KEY); } catch (e) {}
+          }
+          setStatus("Cleared.");
+          toast("Cleared");
+        });
+      }
+
+      // Copy (clipboard API -> fallback select)
+      const copyBtn = document.getElementById("copyBtn");
+      if (copyBtn && notes) {
+        copyBtn.addEventListener("click", async () => {
+          const text = notes.value || "";
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(text);
+              setStatus("Copied ✔");
+              toast("Copied");
+              return;
+            }
+          } catch (e) {}
+          notes.focus();
+          notes.select();
+          setStatus("Selected notes — use Copy.");
+          toast("Selected — Copy");
+        });
+      }
+
+      // Download (Blob -> also open a shareable tab for iOS/restricted browsers)
+      function buildExport(){
+        const d = new Date().toISOString().slice(0,10);
+        const theme = root.getAttribute("data-theme") || "auto";
+        return `2 Corinthians 13 — Notes\nDate: ${d}\nTheme: ${theme}\n\n${notes ? (notes.value||"") : ""}`;
+      }
+
+      function tryDownload(filename, text){
+        try {
+          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1200);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function openTextTab(text){
+        try {
+          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const w = window.open(url, "_blank");
+          if (!w) throw new Error("popup blocked");
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function doDownload(){
+        const text = buildExport();
+        const d = new Date().toISOString().slice(0,10);
+        const filename = `2-corinthians-13-notes-${d}.txt`;
+
+        const ok = tryDownload(filename, text);
+        const ok2 = openTextTab(text);
+
+        if (ok || ok2) {
+          setStatus("Downloaded / opened notes.");
+          toast("Notes ready");
+        } else {
+          setStatus("Download blocked here. Open in browser.");
+          toast("Blocked");
+          if (bannerEl) bannerEl.style.display = "block";
+        }
+      }
+
+      const downloadBtn = document.getElementById("downloadBtn");
+      const downloadBtnTop = document.getElementById("downloadBtnTop");
+      if (downloadBtn) downloadBtn.addEventListener("click", doDownload);
+      if (downloadBtnTop) downloadBtnTop.addEventListener("click", doDownload);
+
+      // Print / PDF (works best in real browsers)
+      function doPrint(){
+        try { window.print(); toast("Print opened"); }
+        catch(e){ toast("Print blocked"); if (bannerEl) bannerEl.style.display="block"; }
+      }
+      const printBtn = document.getElementById("printBtn");
+      const printBtnTop = document.getElementById("printBtnTop");
+      if (printBtn) printBtn.addEventListener("click", doPrint);
+      if (printBtnTop) printBtnTop.addEventListener("click", doPrint);
+
+      // Register service worker (PWA offline)
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {
+          // silent fail (some embeds block SW)
+        });
+      }
+    })();
   </script>
 </body>
 </html>
