@@ -252,7 +252,6 @@
       margin: 10px 0 14px;
       color: var(--muted);
     }
-
   </style>
 </head>
 
@@ -270,7 +269,6 @@
       </div>
       <div class="actions">
         <button class="btn ghost" id="themeBtn" type="button">🌓 <span id="themeLabel">Theme: Auto</span></button>
-        <button class="btn" id="downloadBtnTop" type="button">⬇ Download Notes</button>
       </div>
     </div>
   </div>
@@ -334,7 +332,6 @@
         <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
           <button class="btn" type="button" id="clearBtn">🗑 Clear</button>
           <button class="btn" type="button" id="copyBtn">📋 Copy</button>
-          <button class="btn" type="button" id="downloadBtn">⬇ Download</button>
         </div>
 
         <div class="small" id="status">Ready.</div>
@@ -461,65 +458,6 @@
           toast("Selected — Copy");
         });
       }
-
-      // Download (Blob -> also open a shareable tab for iOS/restricted browsers)
-      function buildExport(){
-        const d = new Date().toISOString().slice(0,10);
-        const theme = root.getAttribute("data-theme") || "auto";
-        return `2 Corinthians 13 — Notes\nDate: ${d}\nTheme: ${theme}\n\n${notes ? (notes.value||"") : ""}`;
-      }
-
-      function tryDownload(filename, text){
-        try {
-          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1200);
-          return true;
-        } catch (e) {
-          return false;
-        }
-      }
-
-      function openTextTab(text){
-        try {
-          const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-          const url = URL.createObjectURL(blob);
-          const w = window.open(url, "_blank");
-          if (!w) throw new Error("popup blocked");
-          return true;
-        } catch (e) {
-          return false;
-        }
-      }
-
-      function doDownload(){
-        const text = buildExport();
-        const d = new Date().toISOString().slice(0,10);
-        const filename = `2-corinthians-13-notes-${d}.txt`;
-
-        const ok = tryDownload(filename, text);
-        const ok2 = openTextTab(text);
-
-        if (ok || ok2) {
-          setStatus("Downloaded / opened notes.");
-          toast("Notes ready");
-        } else {
-          setStatus("Download blocked here. Open in browser.");
-          toast("Blocked");
-          if (bannerEl) bannerEl.style.display = "block";
-        }
-      }
-
-      const downloadBtn = document.getElementById("downloadBtn");
-      const downloadBtnTop = document.getElementById("downloadBtnTop");
-      if (downloadBtn) downloadBtn.addEventListener("click", doDownload);
-      if (downloadBtnTop) downloadBtnTop.addEventListener("click", doDownload);
 
       // Register service worker (PWA offline)
       if ("serviceWorker" in navigator) {
