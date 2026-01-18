@@ -253,11 +253,6 @@
       color: var(--muted);
     }
 
-    @media print{
-      .appbar,.no-print{display:none!important}
-      body{background:#fff;color:#000}
-      .card{box-shadow:none}
-    }
   </style>
 </head>
 
@@ -276,8 +271,6 @@
       <div class="actions">
         <button class="btn ghost" id="themeBtn" type="button">🌓 <span id="themeLabel">Theme: Auto</span></button>
         <button class="btn" id="downloadBtnTop" type="button">⬇ Download Notes</button>
-        <button class="btn" id="printBtnTop" type="button">🖨 Print / PDF</button>
-        <button class="btn primary" id="saveBtn" type="button">✓ Save</button>
       </div>
     </div>
   </div>
@@ -343,7 +336,6 @@
           <button class="btn" type="button" id="clearBtn">🗑 Clear</button>
           <button class="btn" type="button" id="copyBtn">📋 Copy</button>
           <button class="btn" type="button" id="downloadBtn">⬇ Download</button>
-          <button class="btn" type="button" id="printBtn">🖨 Print / PDF</button>
         </div>
 
         <div class="small" id="status">Ready.</div>
@@ -438,21 +430,6 @@
         });
       }
 
-      // Save button
-      const saveBtn = document.getElementById("saveBtn");
-      if (saveBtn && notes) {
-        saveBtn.addEventListener("click", () => {
-          if (!storageOK) { toast("Save blocked here. Use Download."); return; }
-          try {
-            localStorage.setItem(NOTES_KEY, notes.value || "");
-            setStatus("Saved ✔");
-            toast("Saved");
-          } catch (e) {
-            toast("Save blocked here. Use Download.");
-          }
-        });
-      }
-
       // Clear
       const clearBtn = document.getElementById("clearBtn");
       if (clearBtn && notes) {
@@ -544,16 +521,6 @@
       const downloadBtnTop = document.getElementById("downloadBtnTop");
       if (downloadBtn) downloadBtn.addEventListener("click", doDownload);
       if (downloadBtnTop) downloadBtnTop.addEventListener("click", doDownload);
-
-      // Print / PDF (works best in real browsers)
-      function doPrint(){
-        try { window.print(); toast("Print opened"); }
-        catch(e){ toast("Print blocked"); if (bannerEl) bannerEl.style.display="block"; }
-      }
-      const printBtn = document.getElementById("printBtn");
-      const printBtnTop = document.getElementById("printBtnTop");
-      if (printBtn) printBtn.addEventListener("click", doPrint);
-      if (printBtnTop) printBtnTop.addEventListener("click", doPrint);
 
       // Register service worker (PWA offline)
       if ("serviceWorker" in navigator) {
