@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light dark" />
-  <title>Lesson — Study</title>
+  <title>2 Corinthians 13 — Study</title>
 
   <style>
     :root{
@@ -71,6 +71,7 @@
 
     .wrap{max-width:var(--max);margin:0 auto;padding:18px 14px 60px;}
 
+    /* App bar */
     .appbar{
       position:sticky;top:0;z-index:50;
       backdrop-filter: blur(14px);
@@ -141,7 +142,6 @@
       cursor:pointer;
       white-space:nowrap;
       transition:transform .08s ease, background .2s ease;
-      text-decoration:none;
     }
     .btn:hover{background:rgba(255,255,255,.1)}
     .btn:active{transform:translateY(1px)}
@@ -151,6 +151,7 @@
     }
     .btn.ghost{background:rgba(255,255,255,.04)}
 
+    /* Layout */
     .grid{
       display:grid;
       grid-template-columns:1fr;
@@ -205,14 +206,6 @@
 
     .small{font-size:var(--step--1);color:var(--muted2);margin-top:8px}
 
-    iframe.pdf{
-      width:100%;
-      height:70vh;
-      border:0;
-      border-radius:14px;
-      background: rgba(127,127,127,.08);
-    }
-
     @media print{
       .appbar,.no-print{display:none!important}
       body{background:#fff;color:#000}
@@ -227,13 +220,12 @@
       <div class="brand">
         <div class="mark"></div>
         <div>
-          <div class="kicker">SECOND CORINTHIANS</div>
-          <h1 id="pageH1">Lesson</h1>
+          <div class="kicker">Pauline Epistles</div>
+          <h1>2 Corinthians 13</h1>
         </div>
       </div>
       <div class="actions">
         <button class="btn ghost" id="themeBtn">🌓 Theme</button>
-        <a class="btn ghost" id="openPdfBtn" href="#" target="_blank" rel="noopener">📄 Open PDF</a>
         <button class="btn" id="downloadBtn">⬇ Download Notes</button>
         <button class="btn" onclick="window.print()">🖨 Print / PDF</button>
         <button class="btn primary" id="saveBtn">✓ Save</button>
@@ -245,27 +237,38 @@
     <div class="grid">
       <!-- LEFT -->
       <main class="card">
-        <div class="kicker2">Chapter Summary</div>
-        <div class="prose">
-          <p id="summaryText" style="color:var(--muted)">No description provided.</p>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="kicker2">Study PDF</div>
-        <div class="small">Preview may be blocked by Adobe. Use “Open PDF” if it’s blank.</div>
-        <div id="pdfWrap" style="margin-top:12px;">
-          <iframe class="pdf" id="pdfFrame" src=""></iframe>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="kicker2">Logos (KJV) — Example</div>
+        <div class="kicker2">Logos (KJV)</div>
         <blockquote>
           <strong>2 Corinthians 13:5</strong><br>
-          Examine yourselves, whether ye be in the faith; prove your own selves...
+          Examine yourselves, whether ye be in the faith; prove your own selves.
+          Know ye not your own selves, how that Jesus Christ is in you,
+          except ye be reprobates?
         </blockquote>
-        <div class="small">Later, we can also drive this verse from the sheet.</div>
+        <div class="small">From the attached study PDF.</div>
+
+        <div class="divider"></div>
+
+        <div class="kicker2">Chapter Summary</div>
+        <div class="prose">
+          <p>Paul concludes this letter by informing the Corinthians that he will make his third trip to Corinth to check on the church's well-being...</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="kicker2">Chapter Breakdown</div>
+        <ol>
+          <li>Paul’s Warning (1–4)</li>
+          <li>Self-Examination (5–10)</li>
+          <li>Final Remarks (11–14)</li>
+        </ol>
+
+        <div class="divider"></div>
+
+        <div class="kicker2">Word of the Day</div>
+        <div class="prose" style="color:var(--muted)">
+          <strong>Reprobate — Adokimos</strong><br>
+          which does not prove itself to be such as it ought; of sterile soil (G96)
+        </div>
       </main>
 
       <!-- RIGHT -->
@@ -283,35 +286,6 @@
   </div>
 
   <script>
-    // Read params from the URL (built from your spreadsheet)
-    const q = new URLSearchParams(location.search);
-    const title = q.get("title") || "Lesson";
-    const desc  = q.get("desc") || "";
-    const pdf   = q.get("pdf") || "";
-
-    document.title = title + " — Study";
-    document.getElementById("pageH1").textContent = title;
-
-    if (desc.trim()) {
-      const s = document.getElementById("summaryText");
-      s.textContent = desc;
-      s.style.color = "inherit";
-    }
-
-    // PDF wiring
-    const openPdfBtn = document.getElementById("openPdfBtn");
-    const pdfFrame = document.getElementById("pdfFrame");
-    const pdfWrap = document.getElementById("pdfWrap");
-
-    if (pdf) {
-      openPdfBtn.href = pdf;
-      pdfFrame.src = pdf;
-    } else {
-      openPdfBtn.href = "#";
-      openPdfBtn.onclick = (e) => { e.preventDefault(); alert("No PDF link provided."); };
-      pdfWrap.style.display = "none";
-    }
-
     // Theme toggle
     const root = document.documentElement;
     document.getElementById("themeBtn").onclick = () => {
@@ -319,9 +293,9 @@
       root.setAttribute("data-theme", t === "dark" ? "light" : "dark");
     };
 
-    // Notes key + filename (unique per lesson)
+    // Save / Download Notes
     const notes = document.getElementById("notes");
-    const KEY = "notes_" + title.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+    const KEY = "cor13_notes";
     notes.value = localStorage.getItem(KEY) || "";
 
     document.getElementById("saveBtn").onclick = () => {
@@ -333,7 +307,7 @@
       const blob = new Blob([notes.value], {type:"text/plain"});
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = KEY.replace(/^notes_/, "") + "-notes.txt";
+      a.download = "2-corinthians-13-notes.txt";
       a.click();
     };
   </script>
